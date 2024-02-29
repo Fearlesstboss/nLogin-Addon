@@ -1,0 +1,52 @@
+{
+  "nlogin_addon": {
+    "autologin": {
+      "invalidSignature": "Invalid server signature"
+    },
+    "backup": {
+      "downloadingData": "Downloading login data...",
+      "encryptionFailed": "Cannot encrypt backup data",
+      "invalidPassword": "Cannot decrypt key from backup - main password incorrect?",
+      "corrupted": "Cannot decrypt from backup - remote data corrupted?"
+    },
+    "password": {
+      "registering": "Registering a secure password...",
+      "saving": "Saving the account password...",
+      "mainPasswordRequired": "A main password must be configured to synchronize."
+    },
+    "settings": {
+      "name": "nLogin Addon",
+      "enabled": {
+        "name": "Enabled",
+        "description": "Enables/disables the addon."
+      },
+      "mainPassword": {
+        "name": "Main Password",
+        "description": "This is your §6main password§f. If you change your computer, you can still login.\n§9\"Sync Login Data\" option will use this password to protect your data."
+      },
+      "saveLogin": {
+        "name": "Save Passwords",
+        "description": "Saves automatically passwords entered manually via the login command."
+      },
+      "syncPasswords": {
+        "name": "Sync Login Data",
+        "description": "Synchronizes your login data in §aencrypted §fform with §azero knowledge §fon a remote server."
+      },
+      "debug": {
+        "name": "Debug",
+        "description": "Enables/disables the developer mode."
+      },
+      "header": {
+        "password": {
+          "name": "Password"
+        },
+        "general": {
+          "name": "General"
+        },
+        "developer": {
+          "name": "Developers"
+        }
+      }
+    }
+  }
+}

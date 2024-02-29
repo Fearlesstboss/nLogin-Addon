@@ -4,19 +4,19 @@ plugins {
     id("net.labymod.gradle.addon")
 }
 
-group = "org.example"
+group = "com.nickuc.login.addon.common"
 version = "1.0.0"
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
 labyMod {
-    defaultPackageName = "org.example" //change this to your main package name (used by all modules)
+    defaultPackageName = "com.nickuc.login.addon.common"
     addonInfo {
-        namespace = "example"
-        displayName = "ExampleAddon"
-        author = "Example Author"
-        description = "Example Description"
-        minecraftVersion = "*"
+        namespace = "nlogin_addon"
+        displayName = "nLogin Addon"
+        author = "NickUC"
+        description = "Automatically creates a strong password when logging into compatible servers."
+        minecraftVersion = "1.8<1.20.4"
         version = System.getenv().getOrDefault("VERSION", "0.0.1")
     }
 
@@ -53,6 +53,15 @@ subprojects {
     plugins.apply("java-library")
     plugins.apply("net.labymod.gradle")
     plugins.apply("net.labymod.gradle.addon")
+
+    dependencies {
+        val lombok = "org.projectlombok:lombok:1.18.24"
+        compileOnly(lombok)
+        compileOnly(lombok)
+        annotationProcessor(lombok)
+        testCompileOnly(lombok)
+        testAnnotationProcessor(lombok)
+    }
 
     repositories {
         maven("https://libraries.minecraft.net/")
