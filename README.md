@@ -1,6 +1,6 @@
 <div id="addon-logo" align="center">
     <br />
-    <img src="./core/src/main/resources/assets/nlogin_addon/textures/banner.png" alt="Addon Logo" width="500"/>
+    <img src="./core/src/main/resources/assets/nlogin_addon/textures/logo.svg" alt="Addon Logo" width="500"/>
     <h3>Automatically creates a strong passwords/PINs when logging into compatible servers.</h3>
 </div>
 
