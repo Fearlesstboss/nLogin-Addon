@@ -1,0 +1,52 @@
+{
+  "nlogin_addon": {
+    "autologin": {
+      "invalidSignature": "Assinatura inválida do servidor"
+    },en_us.json
+    "backup": {
+      "downloadingData": "Baixando dados de login...",
+      "encryptionFailed": "Não pôde criptografar dados de backup",
+      "invalidPassword": "Não pôde descriptografar a chave do backup - senha principal incorreta?",
+      "corrupted": "Não pôde descriptografar do backup - dados remotos corrompidos?"
+    },
+    "password": {
+      "registering": "Registrando uma senha segura...",
+      "saving": "Salvando a senha da conta...",
+      "mainPasswordRequired": "Uma senha principal deve ser configurada para sincronizar."
+    },
+    "settings": {
+      "name": "nLogin Addon",
+      "enabled": {
+        "name": "Ativo",
+        "description": "Ativa/desativa o addon."
+      },
+      "mainPassword": {
+        "name": "Senha Principal",
+        "description": "Esta é a sua §6senha principal§f. Mesmo que você troque de computador, você ainda poderá logar.\n§9A opção \"Sincronizar Dados de Login\" usará essa senha para proteger seus dados."
+      },
+      "saveLogin": {
+        "name": "Salvar Senhas",
+        "description": "Salva senhas inseridas manualmente via um comando de login."
+      },
+      "syncPasswords": {
+        "name": "Sincronizar Dados de Login",
+        "description": "Sincroniza os dados de login de forma §acriptografada §fcom a técnica de §aconhecimento zero §fem um servidor remoto."
+      },
+      "debug": {
+        "name": "Depuração",
+        "description": "Ativa/desativa o modo de desenvolvimento."
+      },
+      "header": {
+        "password": {
+          "name": "Senha"
+        },
+        "general": {
+          "name": "Geral"
+        },
+        "developer": {
+          "name": "Desenvolvedores"
+        }
+      }
+    }
+  }
+}

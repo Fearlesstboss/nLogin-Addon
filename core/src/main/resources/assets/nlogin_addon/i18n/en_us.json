@@ -30,7 +30,7 @@
       },
       "syncPasswords": {
         "name": "Sync Login Data",
-        "description": "Synchronizes your login data in §aencrypted §fform with §azero knowledge §fon a remote server."
+        "description": "Synchronizes your login data with §aZero-Knowledge Encryption §fon a remote server."
       },
       "debug": {
         "name": "Debug",
