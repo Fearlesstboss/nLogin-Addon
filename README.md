@@ -30,9 +30,9 @@
 
 ## <a id="images"></a>Images
 <img src="./demo/img/demo-1.png" alt="Demo Image 1" width="600"/>
-<br /><br />
+<br />
 <img src="./demo/img/demo-2.png" alt="Demo Image 3" width="600"/>
-<br /><br />
+<br />
 <img src="./demo/img/demo-3.png" alt="Demo Image 2" width="600"/>
 
 ## <a id="compile"></a>Compiling
