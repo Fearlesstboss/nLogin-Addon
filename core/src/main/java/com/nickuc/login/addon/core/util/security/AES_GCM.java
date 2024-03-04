@@ -1,4 +1,4 @@
-package com.nickuc.login.addon.core.util;
+package com.nickuc.login.addon.core.util.security;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -34,19 +34,17 @@ public class AES_GCM {
       IV_LENGTH_BYTE = 12,
       SALT_LENGTH_BYTE = 16;
 
-  public static String encrypt(String content, String password) throws GeneralSecurityException {
-    return encryptBytes(content.getBytes(StandardCharsets.UTF_8), password);
+  public static String encryptToBase64(String content, String password) throws GeneralSecurityException {
+    return Base64.getEncoder().encodeToString(encrypt(content.getBytes(StandardCharsets.UTF_8), password));
   }
 
   // return a base64 encoded AES encrypted text
-  private static String encryptBytes(byte[] bytes, String password)
-      throws GeneralSecurityException {
-
+  public static byte[] encrypt(byte[] bytes, String password) throws GeneralSecurityException {
     // 16 bytes salt
-    byte[] salt = getRandomNonce(SALT_LENGTH_BYTE);
+    byte[] salt = SecureGenerator.getRandomNonce(SALT_LENGTH_BYTE);
 
     // GCM recommended 12 bytes iv?
-    byte[] iv = getRandomNonce(IV_LENGTH_BYTE);
+    byte[] iv = SecureGenerator.getRandomNonce(IV_LENGTH_BYTE);
 
     // secret key from password
     SecretKey aesKeyFromPassword = getAESKeyFromPassword(password.toCharArray(), salt);
@@ -59,24 +57,22 @@ public class AES_GCM {
     byte[] cipherText = cipher.doFinal(bytes);
 
     // prefix IV and Salt to cipher text
-    byte[] cipherTextWithIvSalt = ByteBuffer.allocate(iv.length + salt.length + cipherText.length)
-        .put(iv)
-        .put(salt)
-        .put(cipherText)
-        .array();
+    return ByteBuffer.allocate(iv.length + salt.length + cipherText.length)
+      .put(iv)
+      .put(salt)
+      .put(cipherText)
+      .array();
+  }
 
-    // string representation, base64, send this string to other for decryption.
-    return Base64.getEncoder().encodeToString(cipherTextWithIvSalt);
-
+  public static String decryptFromBase64(String base64, String password) throws GeneralSecurityException {
+    byte[] decrypted = decrypt(Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8)), password);
+    return new String(decrypted, StandardCharsets.UTF_8);
   }
 
   // we need the same password, salt and iv to decrypt it
-  public static String decrypt(String content, String password) throws GeneralSecurityException {
-
-    byte[] decode = Base64.getDecoder().decode(content.getBytes(StandardCharsets.UTF_8));
-
+  public static byte[] decrypt(byte[] content, String password) throws GeneralSecurityException {
     // get back the iv and salt from the cipher text
-    ByteBuffer bb = ByteBuffer.wrap(decode);
+    ByteBuffer bb = ByteBuffer.wrap(content);
 
     byte[] iv = new byte[IV_LENGTH_BYTE];
     bb.get(iv);
@@ -94,20 +90,11 @@ public class AES_GCM {
 
     cipher.init(Cipher.DECRYPT_MODE, aesKeyFromPassword, new GCMParameterSpec(TAG_LENGTH_BIT, iv));
 
-    byte[] plainText = cipher.doFinal(cipherText);
-
-    return new String(plainText, StandardCharsets.UTF_8);
-  }
-
-  public static byte[] getRandomNonce(int numBytes) {
-    byte[] nonce = new byte[numBytes];
-    SecureGenerator.RANDOM.nextBytes(nonce);
-    return nonce;
+    return cipher.doFinal(cipherText);
   }
 
   // Password derived AES 256 bits secret key
-  public static SecretKey getAESKeyFromPassword(char[] password, byte[] salt)
-      throws NoSuchAlgorithmException, InvalidKeySpecException {
+  public static SecretKey getAESKeyFromPassword(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
     // iterationCount = 65536
     // keyLength = 256

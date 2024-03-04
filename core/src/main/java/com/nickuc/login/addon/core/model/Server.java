@@ -1,7 +1,7 @@
 package com.nickuc.login.addon.core.model;
 
 import com.google.gson.JsonObject;
-import com.nickuc.login.addon.core.util.RSA;
+import com.nickuc.login.addon.core.util.security.RSA;
 import java.security.PublicKey;
 import java.util.Base64;
 import java.util.UUID;

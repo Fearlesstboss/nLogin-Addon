@@ -16,13 +16,11 @@ import lombok.ToString;
 @ToString
 public class OutgoingSyncDataPacket implements OutgoingPacket {
 
-  private final String checksum;
-  private final String key; // encrypted with Zero-Knowledge Encryption
   private final String data; // encrypted with Zero-Knowledge Encryption
+  private final String checksum;
 
   @Override
   public void write(JsonObject out) {
-    out.addProperty("key", key);
     out.addProperty("data", data);
     out.addProperty("checksum", checksum);
   }

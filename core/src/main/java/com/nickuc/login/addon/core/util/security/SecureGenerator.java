@@ -5,7 +5,7 @@
  * https://github.com/nickuc
  */
 
-package com.nickuc.login.addon.core.util;
+package com.nickuc.login.addon.core.util.security;
 
 import com.nickuc.login.addon.core.Constants;
 import java.security.SecureRandom;
@@ -21,9 +21,9 @@ public class SecureGenerator {
       SYMBOLS = "^!@#$%&*".toCharArray(),
       ALL = merge(LETTERS, NUMBERS, SYMBOLS);
 
-  public static String generateMainKey() {
+  public static String generateKey() {
     // 6 bits = 1 char
-    int bytesLength = (Constants.MAIN_KEY_BYTES * 6) / 8;
+    int bytesLength = (Constants.MAIN_KEY_LENGTH * 6) / 8;
     byte[] bytes = new byte[bytesLength];
 
     RANDOM.nextBytes(bytes);
@@ -31,9 +31,13 @@ public class SecureGenerator {
   }
 
   public static byte[] generateRSAChallenge() {
-    byte[] random = new byte[Constants.RSA_CHALLENGE_BYTES];
-    RANDOM.nextBytes(random);
-    return random;
+    return getRandomNonce(Constants.RSA_CHALLENGE_BITS / 8);
+  }
+
+  public static byte[] getRandomNonce(int numBytes) {
+    byte[] nonce = new byte[numBytes];
+    RANDOM.nextBytes(nonce);
+    return nonce;
   }
 
   public static String generatePassword() {

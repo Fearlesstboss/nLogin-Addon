@@ -1,4 +1,4 @@
-package com.nickuc.login.addon.core.util;
+package com.nickuc.login.addon.core.util.io;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class IOUtil {
   public static void write(InputStream input, OutputStream output, int bufSize) throws IOException {
     byte[] buf = new byte[bufSize];
     int size;
-    while ((size = input.read(buf, 0, bufSize)) != -1) {
+    while (input.available() > 0 && (size = input.read(buf, 0, bufSize)) != -1) {
       output.write(buf, 0, size);
     }
     output.flush();

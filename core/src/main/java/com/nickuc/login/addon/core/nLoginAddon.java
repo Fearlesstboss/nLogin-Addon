@@ -10,12 +10,15 @@ package com.nickuc.login.addon.core;
 import com.google.gson.JsonObject;
 import com.nickuc.login.addon.core.handler.EventHandler;
 import com.nickuc.login.addon.core.handler.PacketHandler;
+import com.nickuc.login.addon.core.i18n.Message;
+import com.nickuc.login.addon.core.manager.LinkManager;
+import com.nickuc.login.addon.core.manager.LinkManager.SyncResponse;
 import com.nickuc.login.addon.core.manager.SessionManager;
 import com.nickuc.login.addon.core.model.Credentials;
 import com.nickuc.login.addon.core.packet.PacketRegistry;
 import com.nickuc.login.addon.core.platform.Platform;
 import com.nickuc.login.addon.core.platform.Settings;
-import com.nickuc.login.addon.core.util.IOUtil;
+import com.nickuc.login.addon.core.util.io.IOUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,33 +26,77 @@ import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.filechooser.FileSystemView;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@Getter
 public class nLoginAddon {
 
   private final Platform platform;
-  private final SessionManager sessionManager = new SessionManager();
-  private PacketHandler packetHandler;
-  private PacketRegistry packetRegistry;
-  private Credentials credentials;
+  private final @Getter SessionManager sessionManager = new SessionManager();
+  private @Getter Credentials credentials;
 
   public void enable() {
-    loadCredentials();
-    packetHandler = new PacketHandler(this, platform);
-    packetRegistry = new PacketRegistry(packetHandler);
-    platform.registerEvents(new EventHandler(this));
-    getSettings().setMainPassword(credentials.getMainPassword());
+    File credentailsFile = loadCredentials();
+
+    PacketHandler packetHandler = new PacketHandler(this, platform, credentials);
+    PacketRegistry packetRegistry = new PacketRegistry(packetHandler);
+    LinkManager linkManager = new LinkManager(this, platform, credentials);
+    platform.registerEvents(new EventHandler(this, platform, packetRegistry));
+
+    getSettings().init(
+        credentials.getEncryptionPassword(),
+        linkManager::linkAccount,
+        linkManager::unlinkAccount);
+
+    final AtomicInteger shouldSync = new AtomicInteger(0);
+    final AtomicBoolean firstRun = new AtomicBoolean(true);
+
+    Timer timer = new Timer("nLogin Addon Scheduler");
+    timer.scheduleAtFixedRate(new TimerTask() {
+      @Override
+      public void run() {
+        String linkedToken = credentials.getLinkedToken();
+        if (shouldSync.incrementAndGet() == 3 && linkedToken != null) {
+          try {
+            SyncResponse syncResponse = linkManager.sync(linkedToken, credentials.getLinkedEmail());
+            platform.info("Remote Sync response: " + syncResponse);
+
+            if (!firstRun.getAndSet(false) || !syncResponse.equals(SyncResponse.VALID_RESPONSE)) {
+              platform.showNotification(syncResponse.equals(SyncResponse.VALID_RESPONSE) ?
+                  Message.NOTIFICATION_SYNC_SUCCESS.toText(platform) :
+                  Message.NOTIFICATION_SYNC_FAILED.toText(platform, syncResponse.getMessage(platform)));
+            }
+          } catch (Exception e) {
+            error("Cannot sync backup data remotely", e);
+          }
+        }
+
+        String encryptionPassword = getSettings().getEncryptionPassword();
+        if (encryptionPassword != null && !encryptionPassword.trim().equals(credentials.getEncryptionPassword())) {
+          credentials.setEncryptionPassword(encryptionPassword);
+          shouldSync.set(1);
+        }
+
+        if (platform.isEnabled()) {
+          try {
+            credentials.save(credentailsFile);
+          } catch (Exception e) {
+            error("Cannot save credentials to " + credentailsFile.getAbsolutePath(), e);
+          }
+        }
+      }
+    }, 0, TimeUnit.SECONDS.toMillis(1));
   }
 
   public Settings getSettings() {
     return platform.getSettings();
   }
 
-  public void loadCredentials() {
+  public File loadCredentials() {
     File folder;
 
     // Try to use a folder outside ".minecraft" to keep the same credentials across different Minecraft launchers
@@ -89,25 +136,7 @@ public class nLoginAddon {
     }
 
     credentials = Credentials.deserialize(json);
-
-    Timer timer = new Timer("nLoginAddon$Save");
-    timer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        String mainPassword = getSettings().getMainPassword();
-        if (mainPassword != null && !mainPassword.isEmpty() && !mainPassword.trim().equals(credentials.getMainPassword())) {
-          credentials.setMainPassword(mainPassword.trim());
-        }
-
-        if (platform.isEnabled()) {
-          try {
-            credentials.save(file);
-          } catch (Exception e) {
-            error("Cannot save credentials to " + file.getAbsolutePath(), e);
-          }
-        }
-      }
-    }, 0, TimeUnit.SECONDS.toMillis(3));
+    return file;
   }
 
   public void error(String message, Throwable t) {

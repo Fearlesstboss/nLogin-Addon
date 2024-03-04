@@ -2,7 +2,7 @@
   "nlogin_addon": {
     "autologin": {
       "invalidSignature": "Assinatura inválida do servidor"
-    },en_us.json
+    },
     "backup": {
       "downloadingData": "Baixando dados de login...",
       "encryptionFailed": "Não pôde criptografar dados de backup",
@@ -12,7 +12,33 @@
     "password": {
       "registering": "Registrando uma senha segura...",
       "saving": "Salvando a senha da conta...",
-      "mainPasswordRequired": "Uma senha principal deve ser configurada para sincronizar."
+      "recommendLink": "Vincule sua conta para não perder seus dados."
+    },
+    "linking": {
+      "http": {
+        "invalidRequest": "Requisição inválida.",
+        "alreadyLinked": "Já vinculado com a conta %s. Por favor, desvincule a cont atual primeiro.",
+        "noLinkedAccounts": "Não há contas vinculadas!",
+        "unlinkTokenNotMatch": "O token fornecido não é igual ao token registrado atualmente.",
+        "linkSuccess": "A sua conta vinculada. Você já pode fechar esta janela.",
+        "unlinkSuccess": "A sua conta foi desvinculada e seus dados permanentemente removidos para esse token. Você já pode fechar essa janela.",
+        "linkFailed": "Resposta recebida pelo servidor remoto: %s"
+      },
+      "notification": {
+        "syncSuccess": "§aDados remotos sincronizados com sucesso.",
+        "syncFailed": "§cSincronização falhou: %s"
+      },
+      "response": {
+        "invalidTokenOrEmail": "token e/ou e-mail não podem ser nulos!",
+        "encryptionPasswordRequired": "senha de criptografia necessária",
+        "encryptionPasswordInvalid": "senha de criptografia inválida",
+        "corruptedCompressedData": "dados compactados corrompidos",
+        "malformedJson": "json malformado",
+        "validResponse": "resposta válida",
+        "invalidCredentials": "credenciais inválidas",
+        "permissionDenied": "permissão negada",
+        "tooManyRequests": "muitas requisições"
+      }
     },
     "settings": {
       "name": "nLogin Addon",
@@ -20,25 +46,35 @@
         "name": "Ativo",
         "description": "Ativa/desativa o addon."
       },
-      "mainPassword": {
-        "name": "Senha Principal",
-        "description": "Esta é a sua §6senha principal§f. Mesmo que você troque de computador, você ainda poderá logar.\n§9A opção \"Sincronizar Dados de Login\" usará essa senha para proteger seus dados."
+      "linkAccount": {
+        "name": "Vincular Conta",
+        "description": "Vincula sua conta ao site §bnickuc.com §fpara evitar que você perca acesso aos seus dados do addon.",
+        "text": "Backup com §bnickuc.com"
+      },
+      "unlinkAccount": {
+        "name": "Sua conta está vinculada.",
+        "description": "Mesmo que você troque de computador, você ainda poderá logar.\n§9A opção \"Sincronizar Dados do Addon\" usará essa conta para salvar seus dados.",
+        "text": "Desvincular e Apagar Dados"
+      },
+      "encryptionPassword": {
+        "name": "Senha de Criptografia",
+        "description": "Esta senha será usada para §acriptografar os dados §farmazenados na sua §6conta vinculada§f. Se você esquecê-la, você perderá todos os dados do addon. §e(optional)"
       },
       "saveLogin": {
         "name": "Salvar Senhas",
         "description": "Salva senhas inseridas manualmente via um comando de login."
       },
       "syncPasswords": {
-        "name": "Sincronizar Dados de Login",
-        "description": "Sincroniza os dados de login de forma §acriptografada §fcom a técnica de §aconhecimento zero §fem um servidor remoto."
+        "name": "Sincronizar Dados do Addon",
+        "description": "Armazena os dados do addon de forma §acriptografada §fcom a técnica de §aconhecimento zero §fnos servidores que você entrar."
       },
       "debug": {
         "name": "Depuração",
         "description": "Ativa/desativa o modo de desenvolvimento."
       },
       "header": {
-        "password": {
-          "name": "Senha"
+        "backups": {
+          "name": "Backups"
         },
         "general": {
           "name": "Geral"

@@ -18,12 +18,12 @@ import lombok.ToString;
 @ToString
 public class IncomingSyncDataPacket implements IncomingPacket {
 
-  private String key; // encrypted with Zero-Knowledge Encryption
   private String data; // encrypted with Zero-Knowledge Encryption
+  private String checksum;
 
   @Override
   public void read(JsonObject in) {
-    key = in.get("key").getAsString();
     data = in.get("data").getAsString();
+    checksum = in.get("checksum").getAsString();
   }
 }

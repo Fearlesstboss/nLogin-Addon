@@ -14,6 +14,7 @@ import com.nickuc.login.addon.core.nLoginAddon;
 import com.nickuc.login.addon.core.packet.IncomingPacket;
 import com.nickuc.login.addon.core.packet.PacketRegistry;
 import com.nickuc.login.addon.core.packet.outgoing.OutgoingHandshakePacket;
+import com.nickuc.login.addon.core.platform.Platform;
 import com.nickuc.login.addon.core.platform.Settings;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -34,6 +35,8 @@ public class EventHandler {
   ));
 
   private final nLoginAddon addon;
+  private final Platform platform;
+  private final PacketRegistry packetRegistry;
 
   public void handleJoin() {
     try {
@@ -42,7 +45,7 @@ public class EventHandler {
       }
 
       Session session = addon.getSessionManager().newSession();
-      addon.getPlatform().sendRequest(
+      platform.sendRequest(
           new OutgoingHandshakePacket(session.getRsaChallenge(), addon.getSettings()));
     } catch (Exception e) {
       addon.error("Error while handling join: " + e.getMessage(), e);
@@ -96,8 +99,6 @@ public class EventHandler {
       if (!in.has("id") || !in.has("data")) {
         return;
       }
-
-      PacketRegistry packetRegistry = addon.getPacketRegistry();
 
       int id = in.get("id").getAsInt();
       JsonObject inData = in.get("data").getAsJsonObject();

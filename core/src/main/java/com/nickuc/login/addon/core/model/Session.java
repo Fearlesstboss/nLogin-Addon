@@ -24,7 +24,6 @@ public class Session {
   private UUID serverId;
   private UUID userId;
   private PublicKey serverKey;
-  private String checksum;
 
   private @Setter String plainPassword;
   private @Setter boolean syncRequired;
@@ -38,7 +37,6 @@ public class Session {
   public void init(IncomingReadyPacket packet) {
     this.serverId = packet.getId();
     this.userId = packet.getUserId();
-    this.checksum = packet.getChecksum();
     this.serverKey = packet.getKey();
   }
 }

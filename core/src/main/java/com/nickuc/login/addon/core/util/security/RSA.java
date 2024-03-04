@@ -5,7 +5,7 @@
  * https://github.com/nickuc
  */
 
-package com.nickuc.login.addon.core.util;
+package com.nickuc.login.addon.core.util.security;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;

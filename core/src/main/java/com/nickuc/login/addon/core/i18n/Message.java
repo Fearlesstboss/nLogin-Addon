@@ -15,7 +15,28 @@ public enum Message {
 
   REGISTERING_PASSWORD("password.registering"),
   SAVING_PASSWORD("password.saving"),
-  MAIN_PASSWORD_REQUIRED("password.mainPasswordRequired");
+  RECOMMEND_LINK("password.recommendLink"),
+
+  HTTP_INVALID_REQUEST("linking.http.invalidRequest"),
+  HTTP_ALREADY_LINKED("linking.http.alreadyLinked"),
+  HTTP_NO_LINKED_ACCOUNTS("linking.http.noLinkedAccounts"),
+  HTTP_UNLINK_TOKEN_NOT_MATCH("linking.http.unlinkTokenNotMatch"),
+  HTTP_LINK_SUCCESS("linking.http.linkSuccess"),
+  HTTP_UNLINK_SUCCESS("linking.http.unlinkSuccess"),
+  HTTP_LINK_FAILED("linking.http.linkFailed"),
+
+  NOTIFICATION_SYNC_SUCCESS("linking.notification.syncSuccess"),
+  NOTIFICATION_SYNC_FAILED("linking.notification.syncFailed"),
+
+  RESPONSE_INVALID_TOKEN_OR_EMAIL("linking.response.invalidTokenOrEmail"),
+  RESPONSE_ENCRYPTION_PASSWORD_REQUIRED("linking.response.encryptionPasswordRequired"),
+  RESPONSE_ENCRYPTION_PASSWORD_INVALID("linking.response.encryptionPasswordInvalid"),
+  RESPONSE_CORRUPTED_COMPRESSED_DATA("linking.response.corruptedCompressedData"),
+  RESPONSE_MALFORMED_JSON("linking.response.malformedJson"),
+  RESPONSE_VALID_RESPONSE("linking.response.validResponse"),
+  RESPONSE_INVALID_CREDENTIALS("linking.response.invalidCredentials"),
+  RESPONSE_PERMISSION_DENIED("linking.response.permissionDenied"),
+  RESPONSE_TOO_MANY_REQUESTS("linking.response.tooManyRequests");
 
   private final String key;
 

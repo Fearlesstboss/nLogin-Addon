@@ -6,12 +6,12 @@ public interface Settings {
 
   boolean isDebug();
 
-  String getMainPassword();
-
-  void setMainPassword(String mainPassword);
+  String getEncryptionPassword();
 
   boolean isSaveLogin();
 
   boolean isSyncPasswords();
+
+  void init(String encryptionPassword, Runnable linkCallback, Runnable unlinkCallback);
 
 }

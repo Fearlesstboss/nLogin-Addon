@@ -3,6 +3,7 @@ package com.nickuc.login.addon.labymod;
 import com.google.gson.JsonObject;
 import com.nickuc.login.addon.core.Constants;
 import com.nickuc.login.addon.core.handler.EventHandler;
+import com.nickuc.login.addon.core.model.Credentials;
 import com.nickuc.login.addon.core.nLoginAddon;
 import com.nickuc.login.addon.core.packet.OutgoingPacket;
 import com.nickuc.login.addon.core.platform.Platform;
@@ -18,6 +19,7 @@ import net.labymod.api.addon.LabyAddon;
 import net.labymod.api.client.component.Component;
 import net.labymod.api.client.component.format.NamedTextColor;
 import net.labymod.api.client.component.serializer.legacy.LegacyComponentSerializer;
+import net.labymod.api.client.gui.screen.widget.widgets.input.ButtonWidget.ButtonSetting;
 import net.labymod.api.client.gui.screen.widget.widgets.input.SwitchWidget.SwitchSetting;
 import net.labymod.api.client.gui.screen.widget.widgets.input.TextFieldWidget.TextFieldSetting;
 import net.labymod.api.client.resources.ResourceLocation;
@@ -25,6 +27,7 @@ import net.labymod.api.configuration.loader.annotation.ConfigName;
 import net.labymod.api.configuration.loader.annotation.SpriteSlot;
 import net.labymod.api.configuration.loader.annotation.SpriteTexture;
 import net.labymod.api.configuration.loader.property.ConfigProperty;
+import net.labymod.api.configuration.settings.Setting;
 import net.labymod.api.configuration.settings.annotation.SettingSection;
 import net.labymod.api.event.Subscribe;
 import net.labymod.api.event.client.chat.ChatMessageSendEvent;
@@ -35,6 +38,7 @@ import net.labymod.api.event.client.network.server.ServerJoinEvent;
 import net.labymod.api.models.addon.annotation.AddonMain;
 import net.labymod.api.notification.Notification;
 import net.labymod.api.util.I18n;
+import net.labymod.api.util.MethodOrder;
 
 @AddonMain
 public class LabyModBootstrap extends LabyAddon<Configuration> implements Platform {
@@ -45,6 +49,11 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
   protected void enable() {
     addon.enable();
     this.registerSettingCategory();
+    NLOGIN_SETTINGS = labyAPI().coreSettingRegistry().getById(addonInfo().getNamespace());
+
+    final Credentials credentials = addon.getCredentials();
+    labyAPI().minecraft().executeOnRenderThread(() ->
+        LabyModBootstrap.NLOGIN_SETTINGS.getById("unlinkAccount").asElement().setVisibleSupplier(() -> credentials.getLinkedToken() != null));
   }
 
   @Override
@@ -74,7 +83,7 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
 
   @Override
   public void registerEvents(EventHandler handler) {
-    labyAPI().eventBus().registerListener(new EventListener(handler));
+    super.registerListener(new EventListener(handler));
   }
 
   @Override
@@ -154,6 +163,9 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
     }
   }
 
+  public static Setting NLOGIN_SETTINGS;
+  private static Runnable LINK_CALLBACK = () -> {}, UNLINK_CALLBACK = () -> {};
+
   @ConfigName("settings")
   @SpriteTexture(value = "settings")
   public static class Configuration extends AddonConfig implements Settings {
@@ -162,10 +174,10 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
     @SpriteSlot(size = 32)
     private final ConfigProperty<Boolean> enabled = new ConfigProperty<>(true);
 
-    @SettingSection("password")
+    @MethodOrder(after = "linkAccount")
     @SpriteSlot(size = 32, x = 1)
     @TextFieldSetting
-    private final ConfigProperty<String> mainPassword = new ConfigProperty<>("");
+    private final ConfigProperty<String> encryptionPassword = new ConfigProperty<>("");
 
     @SettingSection("general")
     @SpriteSlot(size = 32, y = 1)
@@ -179,6 +191,21 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
     @SpriteSlot(size = 32, x = 2)
     @SwitchSetting
     private final ConfigProperty<Boolean> debug = new ConfigProperty<>(false);
+
+    @SettingSection("backups")
+    @MethodOrder(after = "enabled")
+    @SpriteSlot(size = 32, x = 2, y = 1)
+    @ButtonSetting
+    public void linkAccount() {
+      LINK_CALLBACK.run();
+    }
+
+    @MethodOrder(after = "linkAccount")
+    @SpriteSlot(size = 32, x = 1, y = 1)
+    @ButtonSetting
+    public void unlinkAccount() {
+      UNLINK_CALLBACK.run();
+    }
 
     @Override
     public ConfigProperty<Boolean> enabled() {
@@ -196,13 +223,8 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
     }
 
     @Override
-    public String getMainPassword() {
-      return mainPassword.get();
-    }
-
-    @Override
-    public void setMainPassword(String mainPassword) {
-      this.mainPassword.set(mainPassword);
+    public String getEncryptionPassword() {
+      return encryptionPassword.get();
     }
 
     @Override
@@ -213,6 +235,13 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
     @Override
     public boolean isSyncPasswords() {
       return syncPasswords.get();
+    }
+
+    @Override
+    public void init(String encryptionPassword, Runnable linkCallback, Runnable unlinkCallback) {
+      this.encryptionPassword.set(encryptionPassword);
+      LINK_CALLBACK = linkCallback;
+      UNLINK_CALLBACK = unlinkCallback;
     }
   }
 }

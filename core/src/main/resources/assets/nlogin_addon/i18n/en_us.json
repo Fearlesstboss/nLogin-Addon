@@ -12,7 +12,33 @@
     "password": {
       "registering": "Registering a secure password...",
       "saving": "Saving the account password...",
-      "mainPasswordRequired": "A main password must be configured to synchronize."
+      "recommendLink": "Link your account to avoid losing your data."
+    },
+    "linking": {
+      "http": {
+        "invalidRequest": "Invalid request.",
+        "alreadyLinked": "Already linked with %s account. Please unlink the current account first.",
+        "noLinkedAccounts": "There are no linked accounts!",
+        "unlinkTokenNotMatch": "The token provided does not match the token currently registered.",
+        "linkSuccess": "Your account has been linked. You can now close this window.",
+        "unlinkSuccess": "Your account has been unlinked and your data permanently removed for this token. You can now close this window.",
+        "linkFailed": "Response received by remote linking server: %s"
+      },
+      "notification": {
+        "syncSuccess": "§aRemote data successfully synced.",
+        "syncFailed": "§cFailed to sync: %s"
+      },
+      "response": {
+        "invalidTokenOrEmail": "token and/or email cannot be null!",
+        "encryptionPasswordRequired": "encryption password required",
+        "encryptionPasswordInvalid": "encryption password invalid",
+        "corruptedCompressedData": "corrupted compressed data",
+        "malformedJson": "malformed json",
+        "validResponse": "valid response",
+        "invalidCredentials": "invalid credentials",
+        "permissionDenied": "permission denied",
+        "tooManyRequests": "too many requests"
+      }
     },
     "settings": {
       "name": "nLogin Addon",
@@ -20,25 +46,35 @@
         "name": "Enabled",
         "description": "Enables/disables the addon."
       },
-      "mainPassword": {
-        "name": "Main Password",
-        "description": "This is your §6main password§f. If you change your computer, you can still login.\n§9\"Sync Login Data\" option will use this password to protect your data."
+      "linkAccount": {
+        "name": "Link Account",
+        "description": "Links your account to §bnickuc.com §fwebsite to prevent you from losing your addon data. §e(optional)",
+        "text": "Backup with §bnickuc.com"
+      },
+      "unlinkAccount": {
+        "name": "Your account is linked.",
+        "description": "If the account is linked and you change your computer, you can recover your addon data.\n§9\"Sync Addon Data\" option will use this account to backup your data.\n\n§cIf you unlink your account, all remote data will be permanently deleted.",
+        "text": "Unlink and Delete Data"
+      },
+      "encryptionPassword": {
+        "name": "Encryption Password",
+        "description": "This password will be used to §aencrypt the data §fstored in your §6linked account§f. If you forget it, you will lose all your addon data. §e(optional)"
       },
       "saveLogin": {
         "name": "Save Passwords",
         "description": "Saves automatically passwords entered manually via the login command."
       },
       "syncPasswords": {
-        "name": "Sync Login Data",
-        "description": "Synchronizes your login data with §aZero-Knowledge Encryption §fon a remote server."
+        "name": "Sync Addon Data",
+        "description": "Backups your addon data with §aZero-Knowledge Encryption §fon servers that you play."
       },
       "debug": {
         "name": "Debug",
         "description": "Enables/disables the developer mode."
       },
       "header": {
-        "password": {
-          "name": "Password"
+        "backups": {
+          "name": "Backups"
         },
         "general": {
           "name": "General"

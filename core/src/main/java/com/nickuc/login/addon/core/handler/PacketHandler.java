@@ -22,10 +22,10 @@ import com.nickuc.login.addon.core.packet.incoming.IncomingSyncDataPacket;
 import com.nickuc.login.addon.core.packet.outgoing.OutgoingSyncDataPacket;
 import com.nickuc.login.addon.core.packet.outgoing.OutgoingSyncRequestPacket;
 import com.nickuc.login.addon.core.platform.Platform;
-import com.nickuc.login.addon.core.util.AES_GCM;
-import com.nickuc.login.addon.core.util.RSA;
-import com.nickuc.login.addon.core.util.SHA256;
-import com.nickuc.login.addon.core.util.SecureGenerator;
+import com.nickuc.login.addon.core.util.security.AES_GCM;
+import com.nickuc.login.addon.core.util.security.RSA;
+import com.nickuc.login.addon.core.util.security.SHA256;
+import com.nickuc.login.addon.core.util.security.SecureGenerator;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -38,6 +38,7 @@ public class PacketHandler {
 
   private final nLoginAddon addon;
   private final Platform platform;
+  private final Credentials credentials;
 
   public void handleReady(final IncomingReadyPacket packet) {
     Session session = addon.getSessionManager().getCurrent();
@@ -47,7 +48,6 @@ public class PacketHandler {
 
     session.init(packet);
 
-    Credentials credentials = addon.getCredentials();
     User user = credentials.getUser(session.getUserId());
     Server server = user.getServer(session.getServerId());
 
@@ -60,11 +60,11 @@ public class PacketHandler {
     boolean syncPasswords = addon.getSettings().isSyncPasswords();
     if (packet.isUserRegistered() && server == null) {
       if (syncPasswords) {
-        if (!credentials.getMainPassword().isEmpty()) {
-          platform.sendRequest(new OutgoingSyncRequestPacket());
-        } else {
-          Message.MAIN_PASSWORD_REQUIRED.display(platform);
-          Message.MAIN_PASSWORD_REQUIRED.notification(platform);
+        platform.sendRequest(new OutgoingSyncRequestPacket());
+
+        if (credentials.getLinkedToken() == null) {
+          Message.RECOMMEND_LINK.display(platform);
+          Message.RECOMMEND_LINK.notification(platform);
         }
       }
       return;
@@ -76,18 +76,14 @@ public class PacketHandler {
       String password = SecureGenerator.generatePassword();
       server = user.updateServer(packet.getId(), packet.getKey(), password);
       message = "/register " + password + " " + password;
+      session.setSyncRequired(true);
       Message.REGISTERING_PASSWORD.notification(platform);
     }
 
     session.setServer(server);
 
-    if (syncPasswords) {
-      String mainPassword = credentials.getMainPassword();
-      if (!mainPassword.isEmpty()) {
-        boolean syncRequired = packet.isRequireSync() ||  !SHA256.checksum(mainPassword + user.getMainKey(), packet.getChecksum());
-        session.setSyncRequired(syncRequired);
-        addon.debug("Is Sync Required? " + syncRequired);
-      }
+    if (syncPasswords && !session.isSyncRequired()) {
+      session.setSyncRequired(packet.isRequireSync());
     }
 
     platform.sendMessage(message);
@@ -99,42 +95,27 @@ public class PacketHandler {
       return;
     }
 
-    final Credentials credentials = addon.getCredentials();
-    final User user = credentials.getUser(session.getUserId());
+    final String encryptedData = packet.getData();
+    final String checksum = packet.getChecksum();
 
-    String mainPassword = credentials.getMainPassword();
-    String mainKey = user.getMainKey();
-    String checksum = session.getChecksum();
-
-    if (!SHA256.checksum(mainKey + mainPassword, checksum)) {
-      boolean detected = false;
-      for (String testMainKey : user.getMainKeys()) {
-        if (testMainKey.equals(mainKey)) {
-          continue;
-        }
-
-        if (SHA256.checksum(testMainKey + mainPassword, checksum)) {
-          detected = true;
-          mainKey = testMainKey;
-          break;
-        }
+    String detectedKey = null;
+    for (String key : credentials.getKeys()) {
+      if (SHA256.checksum(key + encryptedData, checksum)) {
+        detectedKey = key;
+        break;
       }
+    }
 
-      if (!detected) {
-        try {
-          mainKey = AES_GCM.decrypt(packet.getKey(), mainPassword);
-        } catch (GeneralSecurityException e) {
-          Message.BACKUP_INVALID_PASSWORD.display(platform);
-          Message.BACKUP_INVALID_PASSWORD.notification(platform);
-          addon.debug("Cannot find the appropriate main key for this server");
-          return;
-        }
-      }
+    if (detectedKey == null) {
+      Message.BACKUP_INVALID_PASSWORD.display(platform);
+      Message.BACKUP_INVALID_PASSWORD.notification(platform);
+      addon.debug("Cannot find the appropriate main key for this server");
+      return;
     }
 
     String data;
     try {
-      data = AES_GCM.decrypt(packet.getData(), mainKey);
+      data = AES_GCM.decryptFromBase64(packet.getData(), detectedKey);
     } catch (GeneralSecurityException e) {
       Message.BACKUP_CORRUPTED.display(platform);
       Message.BACKUP_CORRUPTED.notification(platform);
@@ -142,13 +123,21 @@ public class PacketHandler {
       return;
     }
 
-    JsonObject json = Constants.GSON.fromJson(data, JsonObject.class);
+    JsonObject json;
+    try {
+      json = Constants.GSON.fromJson(data, JsonObject.class);
+    } catch (Exception e) {
+      Message.BACKUP_CORRUPTED.display(platform);
+      Message.BACKUP_CORRUPTED.notification(platform);
+      addon.debug("Cannot decode the data provided by this server");
+      return;
+    }
+
     Server server = Server.deserialize(json);
     if (server != null) {
       session.setServer(server);
       session.setSyncRequired(true);
-      user.updateServer(server);
-      user.addMainKey(mainKey);
+      credentials.getUser(session.getUserId()).updateServer(server);
 
       Message.DOWNLOADING_DATA.notification(platform);
       platform.sendMessage("/login " + server.getPassword());
@@ -172,7 +161,7 @@ public class PacketHandler {
           PublicKey serverKey = session.getServerKey();
           String plainPassword = session.getPlainPassword();
           if (serverId != null && serverKey != null && plainPassword != null) {
-            server = addon.getCredentials().getUser(session.getUserId())
+            server = credentials.getUser(session.getUserId())
                 .updateServer(serverId, serverKey, plainPassword);
 
             Message.SAVING_PASSWORD.notification(platform);
@@ -226,18 +215,10 @@ public class PacketHandler {
       return;
     }
 
-    Credentials credentials = addon.getCredentials();
-    String mainPassword = credentials.getMainPassword();
-    if (mainPassword.isEmpty()) {
-      return;
-    }
-
-    String mainKey = credentials.getUser(session.getUserId()).getMainKey();
-    String checksum = SHA256.hash(SHA256.hash(mainPassword + mainKey));
-    String encryptedMainKey, encryptedData;
+    String mainKey = credentials.getMainKey();
+    String encryptedData;
     try {
-      encryptedMainKey = AES_GCM.encrypt(mainKey, mainPassword);
-      encryptedData = AES_GCM.encrypt(data, mainKey);
+      encryptedData = AES_GCM.encryptToBase64(data, mainKey);
     } catch (GeneralSecurityException e) {
       Message.ENCRYPTION_FAILED.display(platform);
       Message.ENCRYPTION_FAILED.notification(platform);
@@ -245,6 +226,7 @@ public class PacketHandler {
       return;
     }
 
-    platform.sendRequest(new OutgoingSyncDataPacket(checksum, encryptedMainKey, encryptedData));
+    String checksum = SHA256.hash(mainKey + encryptedData);
+    platform.sendRequest(new OutgoingSyncDataPacket(encryptedData, checksum));
   }
 }

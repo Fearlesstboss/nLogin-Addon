@@ -2,45 +2,21 @@ package com.nickuc.login.addon.core.model;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.nickuc.login.addon.core.util.SecureGenerator;
 import java.security.PublicKey;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class User {
 
   private @Getter final UUID id;
-  private @Getter final Set<String> mainKeys;
   private final Map<UUID, Server> servers;
   @Getter boolean modified;
-
-  User(UUID id, Set<String> mainKeys, Map<UUID, Server> servers) {
-    this.id = id;
-    this.servers = servers;
-    this.mainKeys = mainKeys;
-    if (mainKeys.isEmpty()) {
-      addMainKey(SecureGenerator.generateMainKey());
-    }
-  }
-
-  public String getMainKey() {
-    if (mainKeys.isEmpty()) {
-      addMainKey(SecureGenerator.generateMainKey());
-    }
-    return mainKeys.stream().findFirst().get();
-  }
-
-  public void addMainKey(String key) {
-    if (mainKeys.add(key)) {
-      modified = true;
-    }
-  }
 
   public Server updateServer(UUID id, PublicKey key, String password) {
     Server server = getServer(id);
@@ -68,12 +44,6 @@ public class User {
   public JsonObject serialize(JsonObject out) {
     out.addProperty("id", id.toString());
 
-    JsonArray mainKeys = new JsonArray();
-    for (String mainKey : this.mainKeys) {
-      mainKeys.add(new JsonPrimitive(mainKey));
-    }
-    out.add("main-keys", mainKeys);
-
     JsonArray serversJson = new JsonArray();
     for (Map.Entry<UUID, Server> entry : servers.entrySet()) {
       Server server = entry.getValue();
@@ -87,13 +57,7 @@ public class User {
   @Nullable
   static User deserialize(JsonObject in) {
     try {
-      JsonArray mainKeyJson = in.getAsJsonArray("main-keys");
       JsonArray serversJson = in.getAsJsonArray("servers");
-
-      Set<String> mainKeys = new LinkedHashSet<>();
-      for (int i = 0; i < mainKeyJson.size(); i++) {
-        mainKeys.add(mainKeyJson.get(i).getAsJsonPrimitive().getAsString());
-      }
 
       Map<UUID, Server> servers = new HashMap<>();
       for (int i = 0; i < serversJson.size(); i++) {
@@ -104,7 +68,7 @@ public class User {
         }
       }
 
-      return new User(UUID.fromString(in.get("id").getAsString()), mainKeys, servers);
+      return new User(UUID.fromString(in.get("id").getAsString()), servers);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

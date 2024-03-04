@@ -1,7 +1,7 @@
 package com.nickuc.login.addon.core.manager;
 
 import com.nickuc.login.addon.core.model.Session;
-import com.nickuc.login.addon.core.util.SecureGenerator;
+import com.nickuc.login.addon.core.util.security.SecureGenerator;
 import org.jetbrains.annotations.Nullable;
 
 public class SessionManager {

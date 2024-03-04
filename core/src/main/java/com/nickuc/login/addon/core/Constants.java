@@ -14,9 +14,9 @@ public class Constants {
 
   public static final String PREFIX = "[nLogin-Addon] ";
 
-  public static final int MAIN_KEY_BYTES = 192;
+  public static final int MAIN_KEY_LENGTH = 192;
   public static final int DEFAULT_PASSWORD_LENGTH = 12;
-  public static final int RSA_CHALLENGE_BYTES = 4;
+  public static final int RSA_CHALLENGE_BITS = 32;
 
   public static final Gson GSON = new GsonBuilder()
       .disableHtmlEscaping()

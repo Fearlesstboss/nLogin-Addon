@@ -22,7 +22,7 @@
    3. All data will be saved to credentials.json file.
 4. **If the user is registered:**
    1. The addon will search for a registered password and use it if available. 
-   2. If the password is not found and the synchronization feature is enabled along with a configured master password, the addon will attempt to decrypt the content stored remotely by the server using the <a href="https://github.com/nickuc-com/nLogin-Addon/blob/master/core/src/main/java/com/nickuc/login/addon/core/handler/PacketEvent.java#L149">main keys</a>.
+   2. If the password is not found and the synchronization feature is enabled along with a linked account *(and an encryption password is optionally configured)*, the addon will attempt to decrypt the content stored remotely by the server using the <a href="https://github.com/nickuc-com/nLogin-Addon/blob/master/core/src/main/java/com/nickuc/login/addon/core/handler/PacketHandler.java#L102">keys</a>.
 
 ## <a id="dependencies"></a>Dependencies
 
