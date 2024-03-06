@@ -29,7 +29,6 @@ import com.nickuc.login.addon.core.util.security.SecureGenerator;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,7 +73,7 @@ public class PacketHandler {
       message = "/login " + server.getPassword();
     } else {
       String password = SecureGenerator.generatePassword();
-      server = user.updateServer(packet.getId(), packet.getKey(), password);
+      server = user.updateServer(session.getServerId(), packet.getKey(), password);
       message = "/register " + password + " " + password;
       session.setSyncRequired(true);
       Message.REGISTERING_PASSWORD.notification(platform);
@@ -157,7 +156,7 @@ public class PacketHandler {
 
         Server server = session.getServer();
         if (server == null) {
-          UUID serverId = session.getServerId();
+          String serverId = session.getServerId();
           PublicKey serverKey = session.getServerKey();
           String plainPassword = session.getPlainPassword();
           if (serverId != null && serverKey != null && plainPassword != null) {

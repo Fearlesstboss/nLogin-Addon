@@ -16,26 +16,23 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.jetbrains.annotations.Nullable;
 
 @NoArgsConstructor
 @Getter
 @ToString
 public class IncomingReadyPacket implements IncomingPacket {
 
-  private UUID id;
   private UUID userId;
   private int maxAllowedData;
 
   private boolean userRegistered;
   private boolean requireSync;
 
-  private @Nullable PublicKey key;
+  private PublicKey key;
   private byte[] signature;
 
   @Override
   public void read(JsonObject in) {
-    id = UUID.fromString(in.get("id").getAsString());
     userId = UUID.fromString(in.get("user-id").getAsString());
     maxAllowedData = in.get("max-allowed-data").getAsInt();
 

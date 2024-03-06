@@ -15,14 +15,13 @@ import org.jetbrains.annotations.Nullable;
 public class User {
 
   private @Getter final UUID id;
-  private final Map<UUID, Server> servers;
-  @Getter boolean modified;
+  private final Map<String, Server> servers;
+  @Getter volatile boolean modified;
 
-  public Server updateServer(UUID id, PublicKey key, String password) {
+  public Server updateServer(String id, PublicKey key, String password) {
     Server server = getServer(id);
     if (server != null) {
       server.password = password;
-      server.key = key;
     } else {
       servers.put(id, server = new Server(id, key, password));
     }
@@ -36,7 +35,7 @@ public class User {
   }
 
   @Nullable
-  public Server getServer(UUID id) {
+  public Server getServer(String id) {
     return servers.get(id);
   }
 
@@ -45,8 +44,7 @@ public class User {
     out.addProperty("id", id.toString());
 
     JsonArray serversJson = new JsonArray();
-    for (Map.Entry<UUID, Server> entry : servers.entrySet()) {
-      Server server = entry.getValue();
+    for (Server server : servers.values()) {
       serversJson.add(server.serialize(new JsonObject()));
     }
     out.add("servers", serversJson);
@@ -59,7 +57,7 @@ public class User {
     try {
       JsonArray serversJson = in.getAsJsonArray("servers");
 
-      Map<UUID, Server> servers = new HashMap<>();
+      Map<String, Server> servers = new HashMap<>();
       for (int i = 0; i < serversJson.size(); i++) {
         JsonObject serverJson = serversJson.get(i).getAsJsonObject();
         Server server = Server.deserialize(serverJson);

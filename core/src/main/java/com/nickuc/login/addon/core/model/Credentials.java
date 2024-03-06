@@ -36,7 +36,7 @@ public class Credentials {
   private @Getter @Nullable String linkedEmail;
   private @Getter final Set<String> keys;
   private final Map<UUID, User> users;
-  private boolean modified;
+  private volatile boolean modified;
 
   public User getUser(UUID id) {
     return users.computeIfAbsent(id, uuid -> new User(id, new HashMap<>()));
@@ -94,9 +94,10 @@ public class Credentials {
   public void save(File file) throws IOException  {
     if (isModified()) {
       System.out.println(Constants.PREFIX + "Saving credentials... " + file.getAbsolutePath());
+      String json = Constants.GSON_PRETTY.toJson(serialize(new JsonObject()));
       @Cleanup PrintWriter writer = new PrintWriter(
           new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8), false);
-      writer.print(Constants.GSON_PRETTY.toJson(serialize(new JsonObject())));
+      writer.print(json);
       writer.flush();
       removeModified();
     }

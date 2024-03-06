@@ -40,7 +40,7 @@ public class nLoginAddon {
   private @Getter Credentials credentials;
 
   public void enable() {
-    File credentailsFile = loadCredentials();
+    File credentialsFile = loadCredentials();
 
     PacketHandler packetHandler = new PacketHandler(this, platform, credentials);
     PacketRegistry packetRegistry = new PacketRegistry(packetHandler);
@@ -55,13 +55,13 @@ public class nLoginAddon {
     final AtomicInteger shouldSync = new AtomicInteger(0);
     final AtomicBoolean firstRun = new AtomicBoolean(true);
 
-    Timer timer = new Timer("nLogin Addon Scheduler");
-    timer.scheduleAtFixedRate(new TimerTask() {
+    Timer syncTimer = new Timer("nLogin Addon Sync Timer");
+    syncTimer.scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
-        String linkedToken = credentials.getLinkedToken();
-        if (shouldSync.incrementAndGet() == 3 && linkedToken != null) {
-          try {
+        try {
+          String linkedToken = credentials.getLinkedToken();
+          if (shouldSync.incrementAndGet() == 3 && linkedToken != null) {
             SyncResponse syncResponse = linkManager.sync(linkedToken, credentials.getLinkedEmail());
             platform.info("Remote Sync response: " + syncResponse);
 
@@ -70,23 +70,33 @@ public class nLoginAddon {
                   Message.NOTIFICATION_SYNC_SUCCESS.toText(platform) :
                   Message.NOTIFICATION_SYNC_FAILED.toText(platform, syncResponse.getMessage(platform)));
             }
-          } catch (Exception e) {
-            error("Cannot sync backup data remotely", e);
           }
+        } catch (Exception e) {
+          error("Cannot sync backup data remotely", e);
         }
+      }
+    }, 0, TimeUnit.SECONDS.toMillis(1));
 
-        String encryptionPassword = getSettings().getEncryptionPassword();
-        if (encryptionPassword != null && !encryptionPassword.trim().equals(credentials.getEncryptionPassword())) {
-          credentials.setEncryptionPassword(encryptionPassword);
-          shouldSync.set(1);
-        }
-
-        if (platform.isEnabled()) {
-          try {
-            credentials.save(credentailsFile);
-          } catch (Exception e) {
-            error("Cannot save credentials to " + credentailsFile.getAbsolutePath(), e);
+    Timer saveTimer = new Timer("nLogin Addon Save Timer");
+    saveTimer.scheduleAtFixedRate(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          String encryptionPassword = getSettings().getEncryptionPassword();
+          if (encryptionPassword != null && !encryptionPassword.trim().equals(credentials.getEncryptionPassword())) {
+            credentials.setEncryptionPassword(encryptionPassword);
+            shouldSync.set(1);
           }
+
+          if (platform.isEnabled()) {
+            try {
+              credentials.save(credentialsFile);
+            } catch (Exception e) {
+              error("Cannot save credentials to " + credentialsFile.getAbsolutePath(), e);
+            }
+          }
+        } catch (Exception e) {
+          error("Cannot handle save timer", e);
         }
       }
     }, 0, TimeUnit.SECONDS.toMillis(1));
@@ -102,11 +112,9 @@ public class nLoginAddon {
     // Try to use a folder outside ".minecraft" to keep the same credentials across different Minecraft launchers
     String osName = System.getProperty("os.name");
     if (osName != null && osName.startsWith("Windows")) {
-      folder = new File(System.getenv("APPDATA") + File.separator + "nLogin");
-    } else if ("Linux".equals(osName) || "LINUX".equals(osName)) {
-      folder = new File(System.getProperty("user.home") + File.separator + ".nlogin");
+      folder = new File(System.getenv("APPDATA"), "nLogin");
     } else {
-      folder = new File(FileSystemView.getFileSystemView().getDefaultDirectory() + File.separator + "nLogin");
+      folder = new File(FileSystemView.getFileSystemView().getDefaultDirectory(), ".nlogin");
     }
 
     // If the credentials cannot be accessed/created (no permission), use the settings directory
