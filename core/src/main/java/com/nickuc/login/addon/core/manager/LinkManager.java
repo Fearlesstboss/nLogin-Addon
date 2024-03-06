@@ -2,6 +2,7 @@ package com.nickuc.login.addon.core.manager;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.nickuc.login.addon.core.Constants;
 import com.nickuc.login.addon.core.i18n.Message;
 import com.nickuc.login.addon.core.model.Credentials;
@@ -60,7 +61,7 @@ public class LinkManager {
 
     JsonArray keys = new JsonArray();
     for (String key : keysSet) {
-      keys.add(key);
+      keys.add(new JsonPrimitive(key));
     }
     out.add("keys", keys);
 
@@ -299,8 +300,8 @@ public class LinkManager {
         OutputStream outputStream = client.getOutputStream();
         outputStream.write(String.format(HTTP_200_RESPONSE, httpReplyContent.length(), httpReplyContent).getBytes(StandardCharsets.UTF_8));
         outputStream.flush();
-      } catch (Throwable e) {
-        addon.error("Cannot listen to local HTTP requests: " + e.getMessage(), e);
+      } catch (Throwable t) {
+        addon.error("Cannot listen to local HTTP requests: " + t.getMessage(), t);
       } finally {
         listening.set(false);
       }

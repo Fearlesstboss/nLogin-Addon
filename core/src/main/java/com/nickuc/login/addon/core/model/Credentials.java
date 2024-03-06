@@ -9,7 +9,9 @@ package com.nickuc.login.addon.core.model;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.nickuc.login.addon.core.Constants;
+import com.nickuc.login.addon.core.platform.Platform;
 import com.nickuc.login.addon.core.util.security.SecureGenerator;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -91,9 +93,9 @@ public class Credentials {
     }
   }
 
-  public void save(File file) throws IOException  {
+  public void save(File file, Platform platform) throws IOException  {
     if (isModified()) {
-      System.out.println(Constants.PREFIX + "Saving credentials... " + file.getAbsolutePath());
+      platform.info("Saving credentials... " + file.getAbsolutePath());
       String json = Constants.GSON_PRETTY.toJson(serialize(new JsonObject()));
       @Cleanup PrintWriter writer = new PrintWriter(
           new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8), false);
@@ -115,7 +117,7 @@ public class Credentials {
 
     JsonArray keys = new JsonArray();
     for (String key : this.keys) {
-      keys.add(key);
+      keys.add(new JsonPrimitive(key));
     }
     out.add("keys", keys);
 

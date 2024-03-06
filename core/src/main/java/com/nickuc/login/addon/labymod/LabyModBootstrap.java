@@ -49,11 +49,16 @@ public class LabyModBootstrap extends LabyAddon<Configuration> implements Platfo
   protected void enable() {
     addon.enable();
     this.registerSettingCategory();
-    NLOGIN_SETTINGS = labyAPI().coreSettingRegistry().getById(addonInfo().getNamespace());
 
-    final Credentials credentials = addon.getCredentials();
-    labyAPI().minecraft().executeOnRenderThread(() ->
-        LabyModBootstrap.NLOGIN_SETTINGS.getById("unlinkAccount").asElement().setVisibleSupplier(() -> credentials.getLinkedToken() != null));
+    try {
+      NLOGIN_SETTINGS = labyAPI().coreSettingRegistry().getById(addonInfo().getNamespace());
+
+      final Credentials credentials = addon.getCredentials();
+      labyAPI().minecraft().executeOnRenderThread(() ->
+          LabyModBootstrap.NLOGIN_SETTINGS.getById("unlinkAccount").asElement().setVisibleSupplier(() -> credentials.getLinkedToken() != null));
+    } catch (Exception e) {
+      error("Cannot modify addon settings behavior", e);
+    }
   }
 
   @Override

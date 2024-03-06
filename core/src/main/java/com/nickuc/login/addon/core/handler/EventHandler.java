@@ -47,16 +47,16 @@ public class EventHandler {
       Session session = addon.getSessionManager().newSession();
       platform.sendRequest(
           new OutgoingHandshakePacket(session.getRsaChallenge(), addon.getSettings()));
-    } catch (Exception e) {
-      addon.error("Error while handling join: " + e.getMessage(), e);
+    } catch (Throwable t) {
+      addon.error("Error while handling join: " + t.getMessage(), t);
     }
   }
 
   public void handleQuit() {
     try {
       addon.getSessionManager().invalidate();
-    } catch (Exception e) {
-      addon.error("Error while handling quit: " + e.getMessage(), e);
+    } catch (Throwable t) {
+      addon.error("Error while handling quit: " + t.getMessage(), t);
     }
   }
 
@@ -82,8 +82,8 @@ public class EventHandler {
         }
       }
       return false;
-    } catch (Exception e) {
-      addon.error("Error while handling chat: " + e.getMessage(), e);
+    } catch (Throwable t) {
+      addon.error("Error while handling chat: " + t.getMessage(), t);
       return false;
     }
   }
@@ -122,8 +122,8 @@ public class EventHandler {
       } catch (Exception e) {
         addon.error("Cannot handle packet " + incomingPacket.getClass().getSimpleName() + ": " + e.getMessage(), e);
       }
-    } catch (Exception e) {
-      addon.error("Error while handling custom message: " + e.getMessage(), e);
+    } catch (Throwable t) {
+      addon.error("Error while handling custom message: " + t.getMessage(), t);
     }
   }
 }

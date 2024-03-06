@@ -71,8 +71,8 @@ public class nLoginAddon {
                   Message.NOTIFICATION_SYNC_FAILED.toText(platform, syncResponse.getMessage(platform)));
             }
           }
-        } catch (Exception e) {
-          error("Cannot sync backup data remotely", e);
+        } catch (Throwable t) {
+          error("Cannot sync backup data remotely", t);
         }
       }
     }, 0, TimeUnit.SECONDS.toMillis(1));
@@ -90,13 +90,13 @@ public class nLoginAddon {
 
           if (platform.isEnabled()) {
             try {
-              credentials.save(credentialsFile);
+              credentials.save(credentialsFile, platform);
             } catch (Exception e) {
               error("Cannot save credentials to " + credentialsFile.getAbsolutePath(), e);
             }
           }
-        } catch (Exception e) {
-          error("Cannot handle save timer", e);
+        } catch (Throwable t) {
+          error("Cannot handle save timer", t);
         }
       }
     }, 0, TimeUnit.SECONDS.toMillis(1));
